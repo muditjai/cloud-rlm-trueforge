@@ -22,8 +22,6 @@ export interface BillingExportQueryInput {
   projectId: string;
   datasetId: string;
   billingAccountId: string;
-  startDate: string;
-  endDate: string;
   maxResults?: number;
   resourceExport?: boolean;
 }
@@ -51,18 +49,18 @@ function buildBillingExportQuery(input: BillingExportQueryInput): string {
 
   return `
     SELECT
-      service,
-      sku,
-      usage_start_time,
-      usage_end_time,
-      project,
-      cost,
-      currency,
-      resource
+      invoice.month AS month,
+      ROUND(SUM(cost), 6) AS cost,
+      ROUND(
+        SUM(IFNULL((
+          SELECT SUM(c.amount)
+          FROM UNNEST(credits) c
+        ), 0)),
+        6
+      ) AS credit
     FROM ${tableName}
-    WHERE _PARTITIONDATE >= @startDate
-      AND _PARTITIONDATE <= @endDate
-    ORDER BY usage_start_time DESC
+    GROUP BY 1
+    ORDER BY 1 ASC
     LIMIT @limit
   `;
 }
@@ -102,8 +100,6 @@ export async function queryBillingExport(input: BillingExportQueryInput): Promis
     projectId: input.projectId,
     sql,
     params: {
-      startDate: input.startDate,
-      endDate: input.endDate,
       limit: input.maxResults ?? 100,
     },
     maxResults: input.maxResults ?? 100,

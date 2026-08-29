@@ -7,8 +7,6 @@
     "start": "node dist/main-agent.js",
     "run": "npm run build && npm run start",
     "mcp:build": "npm run build",
-    "mcp:start": "node dist/mcp-server/cloud-billing-mcp.js",
-    "mcp:run": "npm run mcp:build && npm run mcp:start",
     "bq-mcp:start": "node dist/mcp-server/gcp-bigquery-mcp.js",
     "bq-mcp:run": "npm run mcp:build && npm run bq-mcp:start"
   },
