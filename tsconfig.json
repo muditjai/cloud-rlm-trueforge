@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["main-agent.ts"]
+  "include": ["main-agent.ts", "mcp-server/**/*.ts"]
 }
