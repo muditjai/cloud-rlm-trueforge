@@ -7,19 +7,35 @@ const client = new TrueForge({
   timeoutInSeconds: 600,
 });
 
+const billingMcpServerName = process.env.TRUEFORGE_BILLING_MCP_SERVER ?? 'gcp-bigquery-mcp';
+
 // Open a session with an inline agent (no saved agent needed).
 const { data: session } = await client.sessions.create({
   agent: {
     spec: {
       model: { name: 'openai/gpt-5-4-mini' }, // a model you configured in Settings
-      instructions: 'You are a concise, helpful assistant.',
+      instructions:
+        'You are a concise, helpful assistant. You have access to a billing export MCP server for GCP cost analysis.',
+      mcpServers: [
+        {
+          name: billingMcpServerName,
+          enableTools: ['query_billing_export'],
+          preload: true,
+        },
+      ],
     },
   },
 });
 
 // Stream one turn and print the reply token by token.
 const stream = await client.sessions.createTurnStream(session.id, {
-  input: [{ type: 'user.message', content: 'In two sentences, what is TrueForge?' }],
+  input: [
+    {
+      type: 'user.message',
+      content:
+        'In two sentences, explain what the attached GCP billing export MCP tool is for and what it returns.',
+    },
+  ],
 });
 
 for await (const { data: event } of stream.withMetadata()) {
